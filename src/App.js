@@ -1,26 +1,148 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import "./App.css";
+import Buttons from "./components/Buttons";
+import CallApi, { numero } from "./components/CallApi";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class Pokedex extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      espalda: "null",
+      frente: "null",
+      numero: 1,
+      tipos: [],
+      listapokemon: []
+    };
+  }
+
+  callAPI(numero) {
+    fetch(`https://pokeapi.co/api/v2/pokemon/${numero}/`)
+      .then(res => res.json())
+      .then(res =>
+        this.setState({
+          espalda: res.sprites.back_default,
+          frente: res.sprites.front_default,
+          name: res.name,
+          tipos: res.types,
+          numero: res.id
+        })
+      );
+  }
+
+  random = async () => {
+    await this.setState({
+      numero: Math.ceil(Math.random() * 807)
+    });
+    this.callAPI(this.state.numero);
+    console.log(this);
+  };
+
+  back = async () => {
+    if (this.state.numero > 1) {
+      await this.setState({
+        numero: this.state.numero - 1
+      });
+    }
+    this.callAPI(this.state.numero);
+  };
+
+  next = async () => {
+    await this.setState({
+      numero: this.state.numero + 1
+    });
+
+    this.callAPI(this.state.numero);
+  };
+
+  search() {
+    fetch(`https://pokeapi.co/api/v2/pokemon/?offset=0&limit=807/`)
+      .then(res => res.json())
+      .then(res =>
+        this.setState({
+          listapokemon: res.results
+        })
+      );
+  }
+
+  buscar = e => {
+    this.callAPI(e.target.id);
+  };
+
+  handleChange = async e => {
+    await this.setState({
+      [e.target.name]: e.target.value
+    });
+
+    let termino = this.state.buscar;
+    this.callAPI(termino);
+    this.search();
+  };
+
+  componentDidMount() {
+    this.callAPI(this.state.numero);
+    this.search();
+  }
+
+  render() {
+    let array = [];
+    let typelist;
+
+    let array2 = [];
+    let pokelist;
+    for (let i = 0; i < this.state.listapokemon.length; i++) {
+      if (this.state.listapokemon[i].name.indexOf(this.state.buscar) !== -1) {
+        array2.push(this.state.listapokemon[i].name);
+      }
+    }
+
+    pokelist = array2.map(nombre => (
+      <li onClick={this.buscar} id={nombre} key={nombre.toString()}>
+        {nombre}
+      </li>
+    ));
+
+    for (let i = 0; i < this.state.tipos.length; i++) {
+      array.push(this.state.tipos[i].type.name);
+
+      //define el tipo de pokemon con switch
+      switch (array[i]) {
+        case array[i]:
+          typelist = array.map(tipo => (
+            <li className={tipo} key={tipo.toString()}>
+              {tipo}
+            </li>
+          ));
+          break;
+        default:
+          break;
+      }
+    }
+
+    return (
+      <div className="pokedex">
+        <img src={this.state.frente} alt="pokemon" />
+        <h1>{this.state.name}</h1>
+        <ul className="tipos">{typelist}</ul>
+        <div className="buttons">
+          <button type="button" onClick={this.back} className="button btn">
+            Pokemon Anterior
+          </button>
+          <button type="button" onClick={this.random} className="button btn">
+            Pokemon Random
+          </button>
+          <button type="button" onClick={this.next} className="button btn">
+            Siguiente Pokemon
+          </button>
+        </div>
+        <input onChange={this.handleChange} name="buscar" />{" "}
+        <button type="button" onClick={this.buscar} className="button btn">
+          Buscar
+        </button>
+        <ul>{pokelist}</ul>
+        <Buttons numeros={this.state.numero} />
+      </div>
+    );
+  }
 }
 
-export default App;
+export default Pokedex;

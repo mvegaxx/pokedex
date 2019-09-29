@@ -1,7 +1,9 @@
 import React from "react";
 import "./App.css";
 import Buttons from "./components/Buttons";
-import CallApi, { numero } from "./components/CallApi";
+//import CallApi, { numero } from "./components/CallApi";
+
+const numeroPokemons = 807;
 
 class Pokedex extends React.Component {
   constructor(props) {
@@ -29,33 +31,25 @@ class Pokedex extends React.Component {
       );
   }
 
-  random = async () => {
-    await this.setState({
-      numero: Math.ceil(Math.random() * 807)
-    });
-    this.callAPI(this.state.numero);
-    console.log(this);
+  random = () => {
+    let numero = Math.ceil(Math.random() * numeroPokemons);
+    this.callAPI(numero);
   };
 
   back = async () => {
-    if (this.state.numero > 1) {
-      await this.setState({
-        numero: this.state.numero - 1
-      });
-    }
-    this.callAPI(this.state.numero);
+    let next = this.state.numero - 1;
+    this.callAPI(next);
   };
 
-  next = async () => {
-    await this.setState({
-      numero: this.state.numero + 1
-    });
-
-    this.callAPI(this.state.numero);
+  next = () => {
+    let next = this.state.numero + 1;
+    this.callAPI(next);
   };
 
   search() {
-    fetch(`https://pokeapi.co/api/v2/pokemon/?offset=0&limit=807/`)
+    fetch(
+      `https://pokeapi.co/api/v2/pokemon/?offset=0&limit=${numeroPokemons}/`
+    )
       .then(res => res.json())
       .then(res =>
         this.setState({
@@ -139,7 +133,6 @@ class Pokedex extends React.Component {
           Buscar
         </button>
         <ul>{pokelist}</ul>
-        <Buttons numeros={this.state.numero} />
       </div>
     );
   }
